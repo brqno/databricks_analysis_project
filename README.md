@@ -70,3 +70,12 @@ O CSV em `data/` é um arquivo de exemplo do projeto. Antes de redistribuí-lo, 
 
 7. Após isso, poderá criar dashboards a partir dos dados disponíveis.
 
+## Próximos passos
+
+Melhorias planejadas para aproximar o projeto de um cenário de produção:
+
+- [ ] **Orquestração:** encadear extração, transformação, Gold e diagnósticos em um Databricks Workflow (ou Asset Bundle), com `source_path` e `batch_id` como parâmetros e concorrência máxima de uma execução.
+- [ ] **Testes automatizados:** extrair a lógica de conversão e validação para módulos Python com testes `pytest` e executá-los em um pipeline de CI (GitHub Actions).
+- [ ] **Otimização das tabelas:** avaliar particionamento, `OPTIMIZE` e Z-Order conforme o volume de dados cresce.
+
+
