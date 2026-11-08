@@ -4,6 +4,7 @@ Pipeline analítico em notebooks Databricks/Spark para ler o CSV de emendas, pre
 
 <img width="1342" height="749" alt="Power BI Desktop 08_11_2026 15_56_05" src="https://github.com/user-attachments/assets/c94e8e17-13c1-44e1-9f95-3f189f80c3de" />
 
+Você pode encontrar os dados de emendas parlamentares no seguinte Link: https://portaldatransparencia.gov.br/download-de-dados/emendas-parlamentares (acesso em 08/11/2026)
 ## Arquitetura
 
 ```text
