@@ -1,6 +1,8 @@
 # Análise de Emendas Parlamentares
 
-Pipeline analítico em notebooks Databricks/Spark para ler o CSV de emendas, preservar os snapshots de origem, validar e tipar os dados e publicar um modelo dimensional Delta.
+Pipeline analítico em notebooks Databricks/Spark para ler o CSV de emendas, preservar os snapshots de origem, validar e tipar os dados e publicar um modelo dimensional Delta, dados podem ser carregados e consumidos por BI.
+
+<img width="1342" height="749" alt="Power BI Desktop 08_11_2026 15_56_05" src="https://github.com/user-attachments/assets/c94e8e17-13c1-44e1-9f95-3f189f80c3de" />
 
 ## Arquitetura
 
@@ -45,6 +47,8 @@ Prata, rejeições, métricas e Gold são snapshots reconstruídos; Gold usa `CR
 
 As SKs determinísticas dependem dos atributos naturais e permanecem estáveis quando novos membros são acrescentados. Mudanças nos atributos naturais formam outro membro; o modelo não implementa histórico SCD Tipo 2.
 
+<img width="504" height="414" alt="emendas_parlamentares_fato - Databricks - Google Chrome 08_11_2026 16_01_44" src="https://github.com/user-attachments/assets/a7223f05-2278-458e-afbc-ac3cb831e4b8" />
+
 ## Validações
 
 `transform/transform_data.ipynb` verifica conversões e reconcilia a contagem entre lote e Prata. `gold/gold_modeling.ipynb` valida o grão da fato e a unicidade da chave de origem. `diagnostics/analysis.ipynb` verifica lote atual, contagens, chaves, integridade referencial, membros desconhecidos e conversões, além de disponibilizar análises de negócio. As validações críticas falham com mensagem explícita.
@@ -52,3 +56,16 @@ As SKs determinísticas dependem dos atributos naturais e permanecem estáveis q
 ## Dados e publicação
 
 O CSV em `data/` é um arquivo de exemplo do projeto. Antes de redistribuí-lo, confirme a origem, licença e termos de uso. Para uso recorrente ou produção, prefira armazenar os dados num Volume ou storage controlado, fora do repositório, e configure `source_path` por job.
+
+### Como Conectar ao Dashboard
+1. Abra o **Power BI Desktop**.
+2. Vá em **Obter Dados (Get Data)** > **Databricks**.
+3. Insira o **Server Hostname** e **HTTP Path** do seu SQL Warehouse no Databricks.
+4. Escolha o modo de conectividade (**DirectQuery** para dados em tempo real ou **Import** para melhor performance visual).
+5. Autentique-se utilizando seu token/credenciais configuradas.
+6. Carregue todas as tabelas fato e dimensão **e faça a seguinte modelagem de dados**:
+
+<img width="936" height="739" alt="Power BI Desktop 08_11_2026 16_05_37" src="https://github.com/user-attachments/assets/2f41d190-af31-4e45-8661-8f7d6c47c8ff" />
+
+7. Após isso, poderá criar dashboards a partir dos dados disponíveis.
+
