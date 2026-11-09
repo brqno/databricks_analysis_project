@@ -41,6 +41,8 @@ O arquivo `databricks.yml` define o bundle e o job `etl_emendas_job` (“[Pipeli
 1. `extract_bronze` executa `src/extract/extract_emendas.ipynb`.
 2. `transform_prata` executa `src/transform/transform_data.ipynb` após a extração.
 3. `golding_ouro` executa `src/gold/gold_modeling.ipynb` após a transformação.
+   
+<img width="1165" height="508" alt="Pipeline  Emendas Parlamentares - Databricks - Google Chrome 09_11_2026 20_37_13" src="https://github.com/user-attachments/assets/32ae2abb-a373-4fc0-a6c0-7d31c785236f" />
 
 Se uma etapa falhar, as etapas dependentes não são executadas. O notebook `diagnostics/analysis.ipynb` não faz parte do job e deve ser executado separadamente para análise e validações adicionais.
 
@@ -60,6 +62,7 @@ databricks bundle run etl_emendas_job
 A configuração atual define a sequência das tarefas, mas não define agendamento nem fornece os parâmetros `source_path` e `batch_id` à tarefa de extração. Configure esses parâmetros no job antes de executá-lo, além do acesso do compute ao catálogo/schema e ao arquivo CSV. Para processar outro snapshot, use um novo `batch_id`; mantenha a concorrência do job em um para evitar lotes simultâneos.
 
 O notebook de extração cria a tabela Bronze na primeira execução. Se encontrar o esquema Bronze antigo do projeto, faz uma migração de esquema única, preserva as linhas existentes como lote `legacy` e inclui o novo lote; a migração para com erro se houver colunas desconhecidas, em vez de descartá-las. As execuções seguintes acrescentam lotes e metadados (`source_file`, `source_batch_id`, `Data_Carga` e `source_row_id`). A chave de linha é derivada de um hash do conteúdo, arquivo e ocorrência; linhas idênticas continuam sendo ocorrências distintas.
+<img width="1159" height="806" alt="Pipeline  Emendas Parlamentares - Databricks - Google Chrome 09_11_2026 20_37_02" src="https://github.com/user-attachments/assets/ac2fd80a-cab9-4789-baf2-f29ba8cb198b" />
 
 ## Grão e atualização das tabelas
 
