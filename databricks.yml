@@ -1,0 +1,23 @@
+bundle:
+  name: databricks_analysis_project
+
+resources:
+  jobs:
+    etl_emendas_job:
+      name: "[Pipeline] Emendas Parlamentares"
+      tasks:
+        - task_key: extract_bronze
+          notebook_task:
+            notebook_path: ${workspace.file_path}/src/extract/extract_emendas.ipynb
+        
+        - task_key: transform_prata
+          depends_on:
+            - task_key: extract_bronze
+          notebook_task:
+            notebook_path: ${workspace.file_path}/src/transform/transform_data.ipynb
+            
+        - task_key: golding_ouro
+          depends_on:
+            - task_key: transform_prata
+          notebook_task:
+            notebook_path: ${workspace.file_path}/src/gold/gold_modeling.ipynb

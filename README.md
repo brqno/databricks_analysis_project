@@ -9,19 +9,19 @@ Você pode encontrar os dados de emendas parlamentares no seguinte Link: https:/
 
 ```text
 CSV
-  └── extract/extract_emendas.ipynb
+  └── src/extract/extract_emendas.ipynb
         └── emendas_parlamentares_bronze (histórico append-only)
-              └── transform/transform_data.ipynb
+              └── src/transform/transform_data.ipynb
                     ├── emendas_parlamentares_prata (snapshot mais recente)
                     ├── emendas_parlamentares_rejeicoes
                     └── emendas_parlamentares_quality_metrics
-                          └── gold/gold_modeling.ipynb
+                          └── src/gold/gold_modeling.ipynb
                                 ├── emendas_parlamentares_dim_tempo
                                 ├── emendas_parlamentares_dim_autor
                                 ├── emendas_parlamentares_dim_localidade
                                 ├── emendas_parlamentares_dim_programa_orcamentario
                                 └── emendas_parlamentares_fato
-                                      └── diagnostics/analysis.ipynb
+                                      └── diagnostics/analysis.ipynb (execução manual)
 ```
 
 Configure o catálogo e o schema ativos no compute antes de executar os notebooks. Os nomes de tabela são não qualificados e serão criados nesse schema.
@@ -33,6 +33,31 @@ Configure o catálogo e o schema ativos no compute antes de executar os notebook
 - Execute na ordem: extração, transformação, Gold e diagnósticos.
 - Na extração, informe os parâmetros `source_path` (caminho completo do CSV) e `batch_id` (identificador único da versão do arquivo). Use um novo `batch_id` para cada snapshot. A reexecução do mesmo lote é ignorada, evitando duplicação; mantenha execuções serializadas para evitar concorrência no mesmo lote.
 - A leitura valida o cabeçalho contra o esquema esperado e falha para linhas CSV estruturalmente malformadas. Os campos de origem são lidos como texto; as conversões acontecem na Prata.
+
+## Pipeline e orquestração Databricks
+
+O arquivo `databricks.yml` define o bundle e o job `etl_emendas_job` (“[Pipeline] Emendas Parlamentares”). O job orquestra os notebooks em sequência, com dependências explícitas:
+
+1. `extract_bronze` executa `src/extract/extract_emendas.ipynb`.
+2. `transform_prata` executa `src/transform/transform_data.ipynb` após a extração.
+3. `golding_ouro` executa `src/gold/gold_modeling.ipynb` após a transformação.
+
+Se uma etapa falhar, as etapas dependentes não são executadas. O notebook `diagnostics/analysis.ipynb` não faz parte do job e deve ser executado separadamente para análise e validações adicionais.
+
+Para validar e publicar o job, use a Databricks CLI autenticada e execute os comandos a partir da raiz deste projeto:
+
+```bash
+databricks bundle validate
+databricks bundle deploy
+```
+
+Depois da publicação, execute o job com:
+
+```bash
+databricks bundle run etl_emendas_job
+```
+
+A configuração atual define a sequência das tarefas, mas não define agendamento nem fornece os parâmetros `source_path` e `batch_id` à tarefa de extração. Configure esses parâmetros no job antes de executá-lo, além do acesso do compute ao catálogo/schema e ao arquivo CSV. Para processar outro snapshot, use um novo `batch_id`; mantenha a concorrência do job em um para evitar lotes simultâneos.
 
 O notebook de extração cria a tabela Bronze na primeira execução. Se encontrar o esquema Bronze antigo do projeto, faz uma migração de esquema única, preserva as linhas existentes como lote `legacy` e inclui o novo lote; a migração para com erro se houver colunas desconhecidas, em vez de descartá-las. As execuções seguintes acrescentam lotes e metadados (`source_file`, `source_batch_id`, `Data_Carga` e `source_row_id`). A chave de linha é derivada de um hash do conteúdo, arquivo e ocorrência; linhas idênticas continuam sendo ocorrências distintas.
 
